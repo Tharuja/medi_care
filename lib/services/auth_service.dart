@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '/screens/login/home/home_screen.dart';
-import 'login_screen.dart';
+import '/screens/home/home_screen.dart';
+import '../screens/login/login_screen.dart';
 
-class AuthSwitcher extends StatelessWidget {
-  const AuthSwitcher({super.key});
+class AuthService extends StatelessWidget {
+  const AuthService({super.key});
 
   @override
   Widget build(BuildContext context) {
