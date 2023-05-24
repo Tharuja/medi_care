@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:medi_care/screens/dashboard/viewMyPatients.dart';
 
 import '../../shared/background_wave_container.dart';
 
@@ -100,7 +103,9 @@ class DashboardScreen extends StatelessWidget {
                               bottomRight: Radius.circular(20)),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                         Get.to(const ViewMyPatients());
+                      },
                       child: Text("View My Patients"))),
             ],
           ),
