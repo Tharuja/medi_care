@@ -4,17 +4,19 @@ import 'package:get/get.dart';
 import 'package:medi_care/models/patient.dart';
 
 import '../../services/save_patient_service.dart';
+import '../../services/update_patient_service.dart';
 import '../../shared/background_wave_container.dart';
 import '../../shared/input_field.dart';
 
-class AddPatientScreen extends StatefulWidget {
-  const AddPatientScreen({Key? key}) : super(key: key);
+class PatientScreen extends StatefulWidget {
+  PatientScreen({this.existingPatient, Key? key}) : super(key: key);
 
+  Patient? existingPatient;
   @override
-  State<AddPatientScreen> createState() => _AddPatientScreenState();
+  State<PatientScreen> createState() => _PatientScreenState();
 }
 
-class _AddPatientScreenState extends State<AddPatientScreen> {
+class _PatientScreenState extends State<PatientScreen> {
   String name = "";
   String address = "";
   int age = 20;
@@ -22,13 +24,30 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
   int? bpressure;
   String? allergics;
   String? other;
-  List<MediRecord> mediRecords = [MediRecord(DateTime.now(), "", "")];
+  List<MediRecord>? mediRecords = [];
 
   List<TextEditingController> dateControllers = [
     TextEditingController(text: DateTime.now().toString())
   ];
   final ScrollController _scrollController = ScrollController();
   final _formKey1 = GlobalKey<FormState>();
+  bool editMode = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingPatient != null) {
+      editMode = false;
+      name = widget.existingPatient!.name;
+      address = widget.existingPatient!.address;
+      age = widget.existingPatient!.age;
+      fbs = widget.existingPatient!.fbs;
+      bpressure = widget.existingPatient!.bpressure;
+      allergics = widget.existingPatient!.allergics;
+      other = widget.existingPatient!.other;
+      mediRecords = widget.existingPatient!.mediRecords;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +63,10 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                     Get.back();
                   },
                   icon: const Icon(Icons.arrow_back)),
-              const Text('Add New Patient',
+              Text(
+                  widget.existingPatient == null
+                      ? 'Add New Patient'
+                      : "View Patient",
                   style: TextStyle(
                       fontSize: 30,
                       color: Color.fromARGB(255, 0, 0, 0),
@@ -52,65 +74,126 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
             ],
           ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  fixedSize: const Size(80, 20),
-                  primary: Colors.teal,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(20),
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20)),
-                  ),
-                ),
-                onPressed: () async {
-                  if (_formKey1.currentState!.validate()) {
-                    Patient patient = Patient(name, address, age, fbs,
-                        bpressure, allergics, other, mediRecords);
-                    final result = await savePatient(patient);
-                    print(result);
-                    if (result == true) {
-                      Get.snackbar(
-                        "Staus",
-                        "Patient saved successfully",
-                        backgroundColor: Colors.teal,
-                        colorText: Colors.white,
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    } else {
-                      Get.snackbar(
-                        "Staus",
-                        "Error in saving patient",
-                        backgroundColor: Colors.teal,
-                        colorText: Colors.white,
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    }
-                  } else {
-                    Get.snackbar(
-                      "Staus",
-                      "Error in saving patient",
-                      backgroundColor: Colors.teal,
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  }
-                },
-                child: const Text(
-                  'Save',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(widget.existingPatient != null
+                  ? "ID: ${widget.existingPatient!.id!}"
+                  : ""),
+              editMode
+                  ? ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        fixedSize: const Size(80, 20),
+                        primary: Colors.teal,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(20),
+                              bottomLeft: Radius.circular(20),
+                              bottomRight: Radius.circular(20)),
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (name != "" || address != "") {
+                          var result;
+                          Patient patient = Patient(
+                              name: name,
+                              address: address,
+                              age: age,
+                              fbs: fbs,
+                              bpressure: bpressure,
+                              allergics: allergics,
+                              other: other,
+                              mediRecords: mediRecords);
+                          if (widget.existingPatient != null) {
+                            result = await updatePatient(
+                                patient, widget.existingPatient!.id);
+                          } else {
+                            result = await savePatient(patient);
+                          }
+                          print(result);
+                          if (result == true) {
+                            Get.snackbar(
+                              "Staus",
+                              "Patient saved successfully",
+                              backgroundColor: Colors.teal,
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.BOTTOM,
+                            );
+                            if (widget.existingPatient != null) {
+                              setState(() {
+                                editMode = false;
+                              });
+                            }
+                          } else {
+                            Get.snackbar(
+                              "Staus",
+                              "Error in saving patient",
+                              backgroundColor: Colors.teal,
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.BOTTOM,
+                            );
+                          }
+                        } else {
+                          Get.snackbar(
+                            "Staus",
+                            "Error in saving patient, Please fill the form correctly",
+                            backgroundColor: Colors.teal,
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Icon(
+                            Icons.save,
+                            size: 20,
+                          ),
+                          const Text(
+                            'Save',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          editMode = true;
+                        });
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Icon(Icons.edit),
+                          const Text(
+                            'Edit',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        fixedSize: const Size(80, 20),
+                        // primary: Colors.teal,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(20),
+                              bottomLeft: Radius.circular(20),
+                              bottomRight: Radius.circular(20)),
+                        ),
+                      ),
+                    ),
+            ],
+          ),
         ),
         DefaultTabController(
             length: 2, // Length of tabs.
@@ -155,6 +238,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                       label: 'Name',
                                       initialValue: name,
                                       onValidateCallback: onValidateField,
+                                      readOnly: !editMode,
                                       onChangeCallback: (val) {
                                         setState(() {
                                           name = val;
@@ -165,6 +249,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                       label: 'Address',
                                       initialValue: address,
                                       onValidateCallback: onValidateField,
+                                      readOnly: !editMode,
                                       onChangeCallback: (val) {
                                         setState(() {
                                           address = val;
@@ -175,6 +260,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                       label: 'Age',
                                       initialValue: age.toString(),
                                       onValidateCallback: onValidateField,
+                                      readOnly: !editMode,
                                       keyboardType: TextInputType.number,
                                       inputFormatters: <TextInputFormatter>[
                                         FilteringTextInputFormatter.digitsOnly
@@ -190,6 +276,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                       initialValue:
                                           fbs == null ? "" : fbs.toString(),
                                       onValidateCallback: onValidateField,
+                                      readOnly: !editMode,
                                       keyboardType: TextInputType.number,
                                       inputFormatters: <TextInputFormatter>[
                                         FilteringTextInputFormatter.digitsOnly
@@ -206,6 +293,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                           ? ""
                                           : bpressure.toString(),
                                       onValidateCallback: onValidateField,
+                                      readOnly: !editMode,
                                       keyboardType: TextInputType.number,
                                       inputFormatters: <TextInputFormatter>[
                                         FilteringTextInputFormatter.digitsOnly
@@ -222,6 +310,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                           ? ""
                                           : allergics.toString(),
                                       onValidateCallback: onValidateField,
+                                      readOnly: !editMode,
                                       onChangeCallback: (val) {
                                         setState(() {
                                           allergics = val;
@@ -233,6 +322,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                       initialValue:
                                           other == null ? "" : other.toString(),
                                       onValidateCallback: onValidateField,
+                                      readOnly: !editMode,
                                       maxLines: 2,
                                       onChangeCallback: (val) {
                                         setState(() {
@@ -254,17 +344,19 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          mediRecords.add(MediRecord(
-                                              DateTime.now(), "", ""));
-                                          dateControllers.add(
-                                              TextEditingController(
-                                                  text: DateTime.now()
-                                                      .toString()));
-                                        });
-                                        scrollDown();
-                                      },
+                                      onPressed: editMode
+                                          ? () {
+                                              setState(() {
+                                                mediRecords!.add(MediRecord(
+                                                    DateTime.now(), "", ""));
+                                                dateControllers.add(
+                                                    TextEditingController(
+                                                        text: DateTime.now()
+                                                            .toString()));
+                                              });
+                                              scrollDown();
+                                            }
+                                          : null,
                                       icon: Icon(Icons.add_circle)),
                                 ],
                               ),
@@ -274,7 +366,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                   child: ListView.builder(
                                       controller: _scrollController,
                                       padding: EdgeInsets.zero,
-                                      itemCount: mediRecords.length,
+                                      itemCount: mediRecords!.length,
                                       itemBuilder:
                                           (BuildContext context, int index) {
                                         return Container(
@@ -297,14 +389,18 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                                 children: [
                                                   Text("Record ${index + 1}"),
                                                   IconButton(
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          mediRecords
-                                                              .removeAt(index);
-                                                          dateControllers
-                                                              .removeAt(index);
-                                                        });
-                                                      },
+                                                      onPressed: editMode
+                                                          ? () {
+                                                              setState(() {
+                                                                mediRecords!
+                                                                    .removeAt(
+                                                                        index);
+                                                                dateControllers
+                                                                    .removeAt(
+                                                                        index);
+                                                              });
+                                                            }
+                                                          : null,
                                                       icon: Icon(Icons.delete)),
                                                 ],
                                               ),
@@ -315,6 +411,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                                     return onValidateField(
                                                         value);
                                                   },
+                                                  readOnly: !editMode,
                                                   decoration:
                                                       const InputDecoration(
                                                           icon: Icon(Icons
@@ -322,50 +419,62 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                                                           labelText:
                                                               "Enter Date" //label text of field
                                                           ),
-                                                  onTap: () async {
-                                                    //when click we have to show the datepicker
+                                                  onTap: editMode
+                                                      ? () async {
+                                                          //when click we have to show the datepicker
 
-                                                    DateTime? pickedDate =
-                                                        await showDatePicker(
-                                                            context: context,
-                                                            initialDate:
-                                                                DateTime.now(),
-                                                            firstDate:
-                                                                DateTime(2000),
-                                                            lastDate:
-                                                                DateTime(2101));
-                                                    setState(() {
-                                                      mediRecords[index].date =
-                                                          pickedDate!;
-                                                      dateControllers[index]
-                                                              .text =
-                                                          pickedDate.toString();
-                                                    });
-                                                  }),
+                                                          DateTime? pickedDate =
+                                                              await showDatePicker(
+                                                                  context:
+                                                                      context,
+                                                                  initialDate:
+                                                                      DateTime
+                                                                          .now(),
+                                                                  firstDate:
+                                                                      DateTime(
+                                                                          2000),
+                                                                  lastDate:
+                                                                      DateTime(
+                                                                          2101));
+                                                          setState(() {
+                                                            mediRecords![index]
+                                                                    .date =
+                                                                pickedDate!;
+                                                            dateControllers[
+                                                                        index]
+                                                                    .text =
+                                                                pickedDate
+                                                                    .toString();
+                                                          });
+                                                        }
+                                                      : null),
                                               InputField(
                                                 label: "Disease",
                                                 initialValue:
-                                                    mediRecords[index].disease,
+                                                    mediRecords![index].disease,
                                                 onValidateCallback:
                                                     onValidateField,
+                                                readOnly: !editMode,
                                                 maxLines: 1,
                                                 onChangeCallback: (val) {
                                                   setState(() {
-                                                    mediRecords[index].disease =
-                                                        val;
+                                                    mediRecords![index]
+                                                        .disease = val;
                                                   });
                                                 },
                                               ),
                                               InputField(
                                                 label: "Treatment",
-                                                initialValue: mediRecords[index]
-                                                    .treatment,
+                                                initialValue:
+                                                    mediRecords![index]
+                                                        .treatment,
                                                 onValidateCallback:
                                                     onValidateField,
+                                                readOnly: !editMode,
                                                 maxLines: 1,
                                                 onChangeCallback: (val) {
                                                   setState(() {
-                                                    mediRecords[index]
+                                                    mediRecords![index]
                                                         .treatment = val;
                                                   });
                                                 },

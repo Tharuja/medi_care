@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
-import '../patients/add_patient_screen.dart';
+import '../patients/patient_screen.dart';
 import '/screens/dashboard/dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
         tooltip: "Add new patient",
         backgroundColor: Colors.deepPurple,
         onPressed: () {
-          Get.to(const AddPatientScreen());
+          Get.to(PatientScreen());
         },
         child: Icon(Icons.add),
       ),

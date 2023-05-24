@@ -5,7 +5,7 @@ import '/models/patient.dart';
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 final CollectionReference _mainCollection = _firestore.collection('users');
 
-Future<bool> savePatient(Patient patient) async {
+Future<bool> updatePatient(Patient patient, String? documentId) async {
   bool result = false;
   var email = FirebaseAuth.instance.currentUser!.email;
   List mediRecords = [];
@@ -17,7 +17,7 @@ Future<bool> savePatient(Patient patient) async {
       "treatment": element.treatment,
     });
   }
-  await _mainCollection.doc(email).collection("patients").add({
+  await _mainCollection.doc(email).collection("patients").doc(documentId).set({
     "name": patient.name,
     "address": patient.address,
     "age": patient.age,
@@ -26,8 +26,7 @@ Future<bool> savePatient(Patient patient) async {
     "allergics": patient.allergics,
     "other": patient.other,
     "mediRecords": mediRecords,
-    "added_date": DateTime.now()
-  }).then((value) {
+  }, SetOptions(merge: true)).then((value) {
     print("Patient saved successfully");
     result = true;
   }).catchError((error) {

@@ -1,14 +1,16 @@
 class Patient {
-  Patient(
-    this.name,
-    this.address,
-    this.age,
+  Patient({
+    this.id,
+    required this.name,
+    required this.address,
+    required this.age,
     this.fbs,
     this.bpressure,
     this.allergics,
     this.other,
     this.mediRecords,
-  );
+  });
+  late String? id;
   late String name;
   late String address;
   late int age;
@@ -16,7 +18,7 @@ class Patient {
   late int? bpressure;
   late String? allergics;
   late String? other;
-  late List<MediRecord> mediRecords = [];
+  late List<MediRecord>? mediRecords = [];
 }
 
 class MediRecord {
