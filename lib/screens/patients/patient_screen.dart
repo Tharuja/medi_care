@@ -31,6 +31,8 @@ class _PatientScreenState extends State<PatientScreen> {
   ];
   final ScrollController _scrollController = ScrollController();
   final _formKey1 = GlobalKey<FormState>();
+  final _formKey2 = GlobalKey<FormState>();
+
   bool editMode = true;
 
   @override
@@ -95,7 +97,9 @@ class _PatientScreenState extends State<PatientScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        if (name != "" || address != "") {
+                        //  if (name != "" || address != "") {
+                        if (_formKey1.currentState != null &&
+                            _formKey1.currentState!.validate()) {
                           var result;
                           Patient patient = Patient(
                               name: name,
@@ -363,6 +367,7 @@ class _PatientScreenState extends State<PatientScreen> {
                               SizedBox(
                                 height: 450,
                                 child: Form(
+                                  key: _formKey2,
                                   child: ListView.builder(
                                       controller: _scrollController,
                                       padding: EdgeInsets.zero,
