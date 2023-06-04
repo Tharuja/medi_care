@@ -4,10 +4,13 @@ import 'package:get/get.dart';
 
 import '../../services/fetch_patients_service.dart';
 import '../../shared/background_wave_container.dart';
+import '../../navigators/view_patients_list_navigator.dart';
 import 'patient_screen.dart';
 
 class ViewPatientsListScreen extends StatefulWidget {
-  const ViewPatientsListScreen({Key? key}) : super(key: key);
+  List allPatients = [];
+
+  ViewPatientsListScreen(this.allPatients, {Key? key}) : super(key: key);
 
   @override
   State<ViewPatientsListScreen> createState() =>
@@ -15,22 +18,30 @@ class ViewPatientsListScreen extends StatefulWidget {
 }
 
 class _ViewPatientsListScreenScreenState extends State<ViewPatientsListScreen> {
-  List allPatients = [];
+  List viewPatientsList = [];
   bool isLoading = false;
+  // late ValueNotifier<List> _myString;
 
   @override
   void initState() {
     super.initState();
-    loadPatientsList();
+    // print("fgfg");
+    // print(widget.allPatients[0].name);
+
+    // viewPatientsList = widget.allPatients;
+    // _myString = ValueNotifier<List>(widget.allPatients);
+
+    // _myString.addListener(() => viewPatientsList = widget.allPatients);
   }
 
-  loadPatientsList() async {
-    isLoading = true;
-    allPatients = await fetchPatients();
-    setState(() {
-      isLoading = false;
-    });
-  }
+  // loadPatientsList() async {
+  //   isLoading = true;
+  //   allPatients = await fetchPatients();
+  //   viewPatientsList = allPatients;
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +51,14 @@ class _ViewPatientsListScreenScreenState extends State<ViewPatientsListScreen> {
             : CustomScrollView(
                 slivers: [
                   SliverPersistentHeader(
-                    delegate: SliverSearchAppBar(),
+                    delegate: SliverSearchAppBar(searchCallBack, resetCallback),
                     // Set this param so that it won't go off the screen when scrolling
                     pinned: true,
                   ),
                   SliverList(
                       delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {
-                    var patient = allPatients[index];
+                    var patient = widget.allPatients[index];
                     return ListTile(
                       shape: Border(
                         bottom: BorderSide(color: Colors.grey, width: 0),
@@ -66,13 +77,44 @@ class _ViewPatientsListScreenScreenState extends State<ViewPatientsListScreen> {
                             ));
                           }),
                     );
-                  }, childCount: allPatients.length))
+                  }, childCount: widget.allPatients.length))
                 ],
               ));
+  }
+
+  searchCallBack(String val) {
+    setState(() {
+      print(val);
+      widget.allPatients = [];
+      for (var element in ViewPatientsListNavigator.allPatients) {
+        widget.allPatients.add(element);
+      }
+      widget.allPatients.retainWhere((patient) {
+        return patient.name.toLowerCase().contains(val.toLowerCase());
+        //you can add another filter conditions too
+      });
+    });
+  }
+
+  resetCallback() {
+    print("reset");
+    print(widget.allPatients);
+    setState(() {
+      widget.allPatients = [];
+      for (var element in ViewPatientsListNavigator.allPatients) {
+        widget.allPatients.add(element);
+      }
+      print(widget.allPatients);
+    });
   }
 }
 
 class SliverSearchAppBar extends SliverPersistentHeaderDelegate {
+  final Function(String) submitCallback;
+  final Function() resetCallback;
+
+  const SliverSearchAppBar(this.submitCallback, this.resetCallback, {Key? key});
+
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -124,9 +166,14 @@ class SliverSearchAppBar extends SliverPersistentHeaderDelegate {
                 children: [
                   AnimSearchBar(
                     helpText: 'Search by name',
-                    onSubmitted: (String) {},
+                    onSubmitted: (val) {
+                      submitCallback(val);
+                    },
                     textController: TextEditingController(),
-                    onSuffixTap: null,
+                    onSuffixTap: resetCallback,
+                    suffixIcon: Icon(Icons.refresh),
+                    // closeSearchOnSuffixTap: true,
+                    // autoFocus: true,
                     width: MediaQuery.of(context).size.width - 32,
                   ),
                 ],

@@ -41,6 +41,7 @@ dependencies:
   google_nav_bar: ^5.0.6
   anim_search_bar: ^2.0.3
   particles_flutter: ^0.1.4
+  carousel_slider: ^4.2.1
 
 dev_dependencies:
   flutter_test:

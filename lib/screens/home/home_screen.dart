@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
+import '../../navigators/dashbd_navigator.dart';
+import '../../navigators/view_patients_list_navigator.dart';
 import '../patients/patient_screen.dart';
 import '/screens/dashboard/dashboard_screen.dart';
 
@@ -22,8 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final List<Widget> _children = [
-    const DashboardScreen(),
-    Container(),
+    DashboardNavigator(),
+    ViewPatientsListNavigator(),
     Container()
   ];
 

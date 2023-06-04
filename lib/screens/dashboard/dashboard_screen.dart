@@ -1,32 +1,35 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
-import '../../services/fetch_dashbd_service.dart';
 import '../../shared/background_wave_container.dart';
-import '../patients/view_patients_screen.dart';
-import 'package:particles_flutter/particles_flutter.dart';
+import '../../navigators/view_patients_list_navigator.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  int totalPatients = 0;
+  int todayPatients = 0;
+
+  DashboardScreen(this.totalPatients, this.todayPatients, {Key? key})
+      : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  var data = {};
-  @override
-  void initState() {
-    super.initState();
-    loadDashbdData();
-  }
+  //var data = {};
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   loadDashbdData();
+  // }
 
-  loadDashbdData() async {
-    data = await fetchDashbdData();
-    setState(() {});
-    print(data);
-  }
+  // loadDashbdData() async {
+  //   data = await fetchDashbdData();
+  //   setState(() {});
+  //   print(data);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -63,13 +66,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              height: 200,
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: ListView(scrollDirection: Axis.horizontal, children: [
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20),
+          //   child: Container(
+          //     height: 200,
+          //     width: MediaQuery.of(context).size.width * 0.8,
+          //     child: ListView(scrollDirection: Axis.horizontal, children: [
+          //    ]),
+          //   ),
+          // ),
+          CarouselSlider(
+              options: CarouselOptions(
+                height: 200.0,
+                autoPlay: true,
+                autoPlayInterval: const Duration(seconds: 2),
+              ),
+              items: [
                 Container(
+                  height: 200,
                   width: MediaQuery.of(context).size.width * 0.8,
                   child: Card(
                     shape: const RoundedRectangleBorder(
@@ -85,21 +99,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               "Today patients",
                               style:
                                   TextStyle(color: Colors.white, fontSize: 18),
                             ),
                             Text(
-                              data['todayPatients'].toString(),
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 50),
+                              widget.todayPatients.toString(),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 50),
                             ),
                           ]),
                     ),
                   ),
                 ),
-                Container(
+                SizedBox(
+                  height: 200,
                   width: MediaQuery.of(context).size.width * 0.8,
                   child: Card(
                     shape: const RoundedRectangleBorder(
@@ -115,13 +130,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               "Total patients",
                               style:
                                   TextStyle(color: Colors.white, fontSize: 18),
                             ),
                             Text(
-                              data['totalPatients'].toString(),
+                              widget.totalPatients.toString(),
                               style:
                                   TextStyle(color: Colors.white, fontSize: 50),
                             ),
@@ -130,8 +145,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ]),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
@@ -149,9 +162,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                         onPressed: () {
-                          Get.to(ViewPatientsListScreen());
+                          Get.to(ViewPatientsListNavigator());
                         },
-                        child: Text("View My Patients"))),
+                        child: const Text("View My Patients"))),
               ],
             ),
           )
